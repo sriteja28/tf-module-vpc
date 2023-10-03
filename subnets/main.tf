@@ -18,3 +18,4 @@ resource "aws_route_table" "table" {
   },
     var.tags)
 }
+
