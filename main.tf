@@ -51,7 +51,7 @@ resource "aws_eip" "ngw" {
 
 resource "aws_nat_gateway" "ngw" {
   allocation_id = aws_eip.ngw.id
-  subnet_id     = lookup(lookup(module.subnets, "public", null), "subnet_ids", null)[0]        #module.subnets["public"].subnet_ids[0]
+  subnet_id     = lookup(lookup(module.subnets, "public", null), "subnet_ids", null)[0]
 
   tags = merge({
     Name = "${var.env}-ngw"
@@ -67,9 +67,15 @@ resource "aws_route" "route-ngw" {
 }
 
 
-resource "aws_route" "peer-ngw" {
+resource "aws_route" "peer-route" {
   count = length(local.all_route_table_ids)
   route_table_id            = element(local.all_route_table_ids, count.index)
   destination_cidr_block    = "172.31.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
+}
+
+resource "aws_route" "default-vpc-peer-route" {
+  route_table_id            = var.default_vpc_rt
+  destination_cidr_block    = var.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
 }
